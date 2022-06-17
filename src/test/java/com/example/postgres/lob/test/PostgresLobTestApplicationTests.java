@@ -66,6 +66,18 @@ class PostgresLobTestApplicationTests {
     @Test
     @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    public void testSelectDataDerivedMethod(@Autowired DocumentRepository documentRepository){
+
+        documentRepository.findByDateCreatedIsBefore(LocalDateTime.now()).forEach(d -> {
+            assertEquals(2022, d.getDateCreated().getYear());
+        });
+
+    }
+
+
+    @Test
+    @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     public void testSelectData(@Autowired DocumentRepository documentRepository){
 
         documentRepository.findById(2L).ifPresent(d -> {
