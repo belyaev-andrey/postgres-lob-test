@@ -24,15 +24,15 @@ public class Document {
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
-    @Column(name = "txt")
-    private String text;
+    @Column(name = "doc_txt")
+    private String docText;
 
-    public String getText() {
-        return text;
+    public String getDocText() {
+        return docText;
     }
 
-    public void setText(String document) {
-        this.text = document;
+    public void setDocText(String document) {
+        this.docText = document;
     }
 
     public LocalDateTime getDateCreated() {
