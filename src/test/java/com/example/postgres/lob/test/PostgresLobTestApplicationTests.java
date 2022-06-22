@@ -10,6 +10,7 @@ import org.springframework.test.context.jdbc.Sql;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -58,9 +59,7 @@ class PostgresLobTestApplicationTests {
     @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     public void testSelectDataDerivedMethod(@Autowired DocumentRepository documentRepository){
 
-        documentRepository.findByDateCreatedIsBefore(LocalDateTime.now()).forEach(d -> {
-            assertEquals(2022, d.getDateCreated().getYear());
-        });
+        assertThrows(JpaSystemException.class, () -> documentRepository.findByDateCreatedIsBefore(LocalDateTime.now()));
 
     }
 
@@ -68,20 +67,30 @@ class PostgresLobTestApplicationTests {
     @Test
     @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectData(@Autowired DocumentRepository documentRepository){
+    public void testSelectEntityById(@Autowired DocumentRepository documentRepository){
 
         documentRepository.findById(2L).ifPresent(d -> {
-            assertEquals(2022, d.getDateCreated().getYear());
+            assertEquals(2021, d.getDateCreated().getYear());
             assertEquals("This is the document text 679983d3-7fde-49c2-be77-719b810e7926", d.getDocText());
         });
 
     }
 
+    @Test
+    @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    public void testSelectAllEntities(@Autowired DocumentRepository documentRepository){
+
+        List<Document> documents = documentRepository.findAll();
+        assertEquals(2, documents.size());
+        documents.forEach(d -> assertEquals(2021, d.getDateCreated().getYear()));
+
+    }
 
     @Test
     @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectData(@Autowired EntityManager em){
+    public void testSelectEntityById(@Autowired EntityManager em){
 
         assertThrows(PersistenceException.class,
                 () -> em.createQuery("select d from Document d where d.id = 2L", Document.class).getResultList());
@@ -91,9 +100,11 @@ class PostgresLobTestApplicationTests {
 
     @Test
     @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     public void testDeleteData(@Autowired DocumentRepository documentRepository){
-        documentRepository.findById(2L).ifPresent(documentRepository::delete);
-
+        Document document = documentRepository.findById(2L).orElseThrow(IllegalStateException::new);
+        documentRepository.delete(document);
+        documentRepository.flush();
         assertTrue(documentRepository.findById(2L).isEmpty());
     }
 
