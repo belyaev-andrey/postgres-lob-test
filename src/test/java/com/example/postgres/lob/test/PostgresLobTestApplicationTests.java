@@ -38,7 +38,7 @@ class PostgresLobTestApplicationTests {
     @Test
     @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectDataJpql(@Autowired DocumentRepository documentRepository){
+    public void testSelectEntityByIdJpql(@Autowired DocumentRepository documentRepository){
 
         assertThrows(JpaSystemException.class, () -> documentRepository.findByIdIs(2L).orElseThrow(RuntimeException::new));
 
@@ -48,8 +48,7 @@ class PostgresLobTestApplicationTests {
     @Test
     @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectDataLike(@Autowired DocumentRepository documentRepository){
-
+    public void testSelectEntityByUsingLikeConditionForLob(@Autowired DocumentRepository documentRepository){
         assertThrows(JpaSystemException.class, () -> documentRepository.findByDocTextLike("text"));
 
     }
@@ -57,7 +56,7 @@ class PostgresLobTestApplicationTests {
     @Test
     @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectDataDerivedMethod(@Autowired DocumentRepository documentRepository){
+    public void testSelectEntityDerivedMethod(@Autowired DocumentRepository documentRepository){
 
         assertThrows(JpaSystemException.class, () -> documentRepository.findByDateCreatedIsBefore(LocalDateTime.now()));
 
@@ -90,10 +89,31 @@ class PostgresLobTestApplicationTests {
     @Test
     @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectEntityById(@Autowired EntityManager em){
+    public void testSelectEntityByIdJpqlEntityManager(@Autowired EntityManager em){
 
         assertThrows(PersistenceException.class,
                 () -> em.createQuery("select d from Document d where d.id = 2L", Document.class).getResultList());
+
+    }
+
+
+    @Test
+    @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    public void testSelectAllEntitiesByJpqlEntityManager(@Autowired EntityManager em){
+
+        assertThrows(PersistenceException.class,
+                () -> em.createQuery("select d from Document d", Document.class).getResultList().forEach(d -> System.out.println(d.getDocText())));
+
+    }
+
+
+    @Test
+    @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    public void testSelectEntityByIdEntityManager(@Autowired EntityManager em){
+
+        assertThrows(PersistenceException.class,() -> em.find(Document.class, 2L));
 
     }
 

@@ -1,5 +1,7 @@
 package com.example.postgres.lob.test;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -23,7 +25,6 @@ public class Document {
     private LocalDateTime dateCreated;
 
     @Lob
-    @Basic(fetch = FetchType.LAZY)
     @Column(name = "doc_txt")
     private String docText;
 
