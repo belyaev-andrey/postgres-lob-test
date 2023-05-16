@@ -3,16 +3,15 @@ package com.example.postgres.lob.test;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @TestPropertySource(locations = {"classpath:test-application.properties"})
@@ -38,34 +37,7 @@ class PostgresLobTestApplicationTests {
     @Test
     @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectEntityByIdJpql(@Autowired DocumentRepository documentRepository){
-
-        assertThrows(JpaSystemException.class, () -> documentRepository.findByIdIs(2L).orElseThrow(RuntimeException::new));
-
-    }
-
-
-    @Test
-    @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectEntityByUsingLikeConditionForLob(@Autowired DocumentRepository documentRepository){
-        assertThrows(JpaSystemException.class, () -> documentRepository.findByDocTextLike("text"));
-
-    }
-
-    @Test
-    @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectEntityDerivedMethod(@Autowired DocumentRepository documentRepository){
-
-        assertThrows(JpaSystemException.class, () -> documentRepository.findByDateCreatedIsBefore(LocalDateTime.now()));
-
-    }
-
-
-    @Test
-    @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    @Transactional
     public void testSelectEntityById(@Autowired DocumentRepository documentRepository){
 
         documentRepository.findById(2L).ifPresent(d -> {
@@ -89,46 +61,11 @@ class PostgresLobTestApplicationTests {
     @Test
     @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectEntityByIdJpqlEntityManager(@Autowired EntityManager em){
-
-        assertThrows(PersistenceException.class,
-                () -> em.createQuery("select d from Document d where d.id = 2L", Document.class).getResultList());
-
-    }
-
-
-    @Test
-    @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectAllEntitiesByJpqlEntityManager(@Autowired EntityManager em){
-
-        assertThrows(PersistenceException.class,
-                () -> em.createQuery("select d from Document d", Document.class).getResultList().forEach(d -> System.out.println(d.getDocText())));
-
-    }
-
-
-    @Test
-    @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    public void testSelectEntityByIdEntityManager(@Autowired EntityManager em){
-
-        assertThrows(PersistenceException.class,() -> em.find(Document.class, 2L));
-
-    }
-
-
-    @Test
-    @Sql(scripts = {"/create-data.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Sql(scripts = {"/delete-data.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     public void testDeleteData(@Autowired DocumentRepository documentRepository){
         Document document = documentRepository.findById(2L).orElseThrow(IllegalStateException::new);
         documentRepository.delete(document);
         documentRepository.flush();
         assertTrue(documentRepository.findById(2L).isEmpty());
     }
-
-
-
 
 }

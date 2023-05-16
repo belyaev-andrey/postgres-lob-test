@@ -1,16 +1,10 @@
 package com.example.postgres.lob.test;
 
-import org.hibernate.annotations.Type;
+import jakarta.persistence.*;
+import org.hibernate.Length;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
@@ -24,8 +18,8 @@ public class Document {
     @Column(name = "date_created", nullable = false)
     private LocalDateTime dateCreated;
 
-    @Lob
-    @Column(name = "doc_txt")
+    @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
+    @Column(name = "doc_txt", length = Length.LONG32)
     private String docText;
 
     public String getDocText() {
